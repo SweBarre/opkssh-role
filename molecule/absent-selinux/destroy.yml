@@ -1,0 +1,58 @@
+---
+- name: Destroy libvirt UEFI VM
+  hosts: localhost
+  gather_facts: false
+  become: false
+  vars:
+    vm_name: instance-rocky9-absent
+    cloud_init_dir: /tmp/cloudinit_{{ vm_name }}
+    ssh_key_path: "{{ lookup('env','HOME') + '/.ssh/molecule-' + vm_name }}"
+    ssh_pubkey_path: "{{ ssh_key_path }}.pub"
+    pool_name: molecule-absent
+    pool_path: /tmp/molecule-pool-absent
+
+  tasks:
+    - name: Stop the VM if running
+      community.libvirt.virt:
+        name: "{{ vm_name }}"
+        state: destroyed
+      failed_when: false
+
+    - name: Undefine the VM and remove all metadata (including NVRAM)
+      community.libvirt.virt:
+        name: "{{ vm_name }}"
+        command: undefine
+        force: true
+      failed_when: false
+
+    - name: Remove cloud-init config directory
+      ansible.builtin.file:
+        path: "{{ cloud_init_dir }}"
+        state: absent
+
+    - name: Remove SSH keypair private key
+      ansible.builtin.file:
+        path: "{{ ssh_key_path }}"
+        state: absent
+
+    - name: Remove SSH keypair public key
+      ansible.builtin.file:
+        path: "{{ ssh_pubkey_path }}"
+        state: absent
+
+    - name: Destroy the storage pool
+      community.libvirt.virt_pool:
+        command: destroy
+        name: "{{ pool_name }}"
+      failed_when: false
+
+    - name: Undefine the storage pool
+      community.libvirt.virt_pool:
+        command: undefine
+        name: "{{ pool_name }}"
+      failed_when: false
+
+    - name: Remove storage pool from filesystem
+      ansible.builtin.file:
+        path: "{{ pool_path }}"
+        state: absent

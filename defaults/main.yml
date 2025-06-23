@@ -1,0 +1,27 @@
+# title: Version of opkssh to install
+# required: True
+# description: The version of opkssh to install, if 'latest' is used the role can break idempotency
+opkssh_version: v0.7.0
+
+# title: Checkshum of opkssh to install
+# required: True
+# description: The sha256 checksum of the opkssh binary, not used if opkss_version is set to 'latest'
+opkssh_bin_checksum: sha256:047ce46214e94c25820a3345927886c048a93254af329e50fa5e76cc43269556
+
+opkssh_user: opksshuser
+opkssh_group: opksshuser
+opkssh_selinux_home: true
+opkssh_restart_ssh: true
+opkssh_install_path: /usr/local/bin
+opkssh_binary_name: opkssh
+opkssh_github_repo: openpubkey/opkssh
+opkssh_sudoers_path: /etc/sudoers.d
+opkssh_ssh_config_filename: 60-opk-ssh.conf
+opkssh_semodule_name: opkssh
+opkssh_config_yml: {}
+opkssh_auth_id: []
+opkssh_providers:
+  - "https://accounts.google.com 206584157355-7cbe4s640tvm7naoludob4ut1emii7sf.apps.googleusercontent.com 24h"
+  - "https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304b66dad/v2.0 096ce0a3-5e72-4da8-9c86-12924b294a01 24h"
+  - "https://gitlab.com 8d8b7024572c7fd501f64374dec6bba37096783dfcd792b3988104be08cb6923 24h"
+  - "https://issuer.hello.coop app_xejobTKEsDNSRd5vofKB2iay_2rN 24h"

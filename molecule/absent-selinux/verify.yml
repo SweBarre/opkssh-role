@@ -1,0 +1,100 @@
+- name: 'Verify (Absent)'
+  hosts: all
+  become: true
+  gather_facts: true
+  vars_files:
+    - ../../defaults/main.yml
+
+  tasks:
+    - name: Get group information
+      ansible.builtin.getent:
+        database: group
+        key: "{{ opkssh_group }}"
+      register: group_info
+      ignore_errors: true
+
+    - name: "Assert group does NOT exist: '{{ opkssh_group }}'"
+      ansible.builtin.assert:
+        that:
+          - group_info is failed or
+            group_info.ansible_facts.getent_group is not defined or
+            group_info.ansible_facts.getent_group[opkssh_group] is not defined
+        fail_msg: "Group '{{ opkssh_group }}' still exists"
+        success_msg: "Group '{{ opkssh_group }}' has been removed"
+
+    - name: Get user information
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ opkssh_user }}"
+      register: user_info
+      ignore_errors: true
+
+    - name: "Assert user does NOT exist: '{{ opkssh_user }}'"
+      ansible.builtin.assert:
+        that:
+          - user_info is failed or
+            user_info.ansible_facts.getent_passwd is not defined or
+            user_info.ansible_facts.getent_passwd[opkssh_user] is not defined
+        fail_msg: "User '{{ opkssh_user }}' still exists"
+        success_msg: "User '{{ opkssh_user }}' has been removed"
+
+    - name: Assert opkssh binary file does NOT exist
+      ansible.builtin.stat:
+        path: "{{ opkssh_install_path }}/{{ opkssh_binary_name }}"
+      register: opkssh_file_info
+
+    - name: Verify opkssh binary file was removed
+      ansible.builtin.assert:
+        that:
+          - not opkssh_file_info.stat.exists
+        fail_msg: "opkssh binary still exists"
+        success_msg: "opkssh binary has been removed"
+
+    - name: Assert sudoers file does NOT exist
+      ansible.builtin.stat:
+        path: "{{ opkssh_sudoers_path }}/opkssh"
+      register: sudoers_file_info
+
+    - name: Verify sudoers file was removed
+      ansible.builtin.assert:
+        that:
+          - not sudoers_file_info.stat.exists
+        fail_msg: "sudoers file still exists"
+        success_msg: "sudoers file has been removed"
+
+    - name: Assert openSSH config file does NOT exist
+      ansible.builtin.stat:
+        path: "/etc/ssh/sshd_config.d/{{ opkssh_ssh_config_filename }}"
+      register: openssh_file_info
+
+    - name: Verify openSSH config file was removed
+      ansible.builtin.assert:
+        that:
+          - not openssh_file_info.stat.exists
+        fail_msg: "openSSH config file still exists"
+        success_msg: "openSSH config file has been removed"
+
+    - name: Assert opkssh config directory does NOT exist
+      ansible.builtin.stat:
+        path: /etc/opk
+      register: opk_dir_info
+
+    - name: Verify /etc/opk directory was removed
+      ansible.builtin.assert:
+        that:
+          - not opk_dir_info.stat.exists
+        fail_msg: "/etc/opk directory still exists"
+        success_msg: "/etc/opk directory has been removed"
+
+    - name: Check if opkssh SELinux module is still installed
+      ansible.builtin.command:
+        cmd: semodule -l
+      register: semodules
+      changed_when: false
+
+    - name: Assert opkssh SELinux module is removed
+      ansible.builtin.assert:
+        that:
+          - "'opkssh' not in semodules.stdout"
+        fail_msg: "opkssh SELinux module is still active"
+        success_msg: "opkssh SELinux module has been removed"

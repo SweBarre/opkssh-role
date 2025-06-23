@@ -1,0 +1,101 @@
+---
+- name: Install opkssh binary
+  ansible.builtin.include_tasks:
+    file: client.yml
+
+- name: Create opkssh group
+  ansible.builtin.group:
+    name: "{{ opkssh_group }}"
+    state: present
+
+- name: Create opkssh user
+  ansible.builtin.user:
+    name: "{{ opkssh_user }}"
+    state: present
+    shell: /sbin/nologin
+    system: true
+    create_home: false
+    group: "{{ opkssh_group }}"
+
+- name: Print out the SELinux status
+  ansible.builtin.debug:
+    msg: "SELinux status is: {{ ansible_selinux }}"
+  when: ansible_selinux is defined
+
+- name: Restoring context for opkssh
+  ansible.builtin.command: "restorecon {{ opkssh_install_path }}/{{ opkssh_binary_name }}"
+  changed_when: false
+  when:
+    - ansible_selinux is defined
+    - ansible_selinux.status not in ['disabled', 'Missing selinux Python library']
+
+- name: Set the correct name for opkssh SELinux module
+  ansible.builtin.set_fact:
+    semodule_name: "{{ 'opkssh' if opkssh_selinux_home else 'opkssh-no-home' }}"
+
+- name: Check if SELinux module is installed and run handlers
+  ansible.builtin.command: semodule -l
+  register: semodule_list
+  changed_when: semodule_name not in semodule_list.stdout
+  notify: Install SELinux module
+  when:
+    - ansible_selinux is defined
+    - ansible_selinux.status not in ['disabled', 'Missing selinux Python library']
+
+- name: Create opkssh configuration directory
+  ansible.builtin.file:
+    name: /etc/opk
+    state: directory
+    owner: root
+    group: "{{ opkssh_group }}"
+    mode: "0750"
+
+- name: Create opkssh policy directory
+  ansible.builtin.file:
+    name: /etc/opk/policy.d
+    state: directory
+    owner: root
+    group: "{{ opkssh_group }}"
+    mode: "0750"
+
+- name: Create opkssh providers file
+  ansible.builtin.template:
+    src: providers
+    dest: /etc/opk/providers
+    owner: root
+    group: "{{ opkssh_group }}"
+    mode: '0640'
+
+- name: Create opkssh config.yml file
+  ansible.builtin.template:
+    src: config.yml
+    dest: /etc/opk/config.yml
+    owner: root
+    group: "{{ opkssh_group }}"
+    mode: '0640'
+
+- name: Create the auth_id file for opkssh
+  ansible.builtin.template:
+    src: auth_id
+    dest: /etc/opk/auth_id
+    owner: root
+    group: "{{ opkssh_group }}"
+    mode: "0640"
+
+- name: Configure openSSH Server
+  ansible.builtin.template:
+    src: 60-opk-ssh.conf
+    dest: "/etc/ssh/sshd_config.d/{{ opkssh_ssh_config_filename }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart openSSH Server
+
+- name: Add sudoers file for opkssh
+  ansible.builtin.template:
+    src: sudoers.opkssh
+    dest: "{{ opkssh_sudoers_path }}/opkssh"
+    owner: root
+    group: root
+    mode: "0440"
+  when: opkssh_selinux_home

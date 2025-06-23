@@ -1,0 +1,22 @@
+---
+dependency:
+  name: galaxy
+role_name_check: 2
+driver:
+  name: docker
+platforms:
+  - name: opkssh-vars
+    image: '${MOLECULE_IMAGE:-ghcr.io/swebarre/systemd-containers}:${MOLECULE_TAG:-tumbleweed}'
+    pre_build_image: true
+    volumes:
+      - '/sys/fs/cgroup:/sys/fs/cgroup'
+      - '/var/lib/containerd'
+    cgroupns_mode: 'host'
+    privileged: true
+provisioner:
+  name: 'ansible'
+  config_options:
+    defaults:
+      become: false
+verifier:
+  name: 'ansible'

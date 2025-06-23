@@ -1,0 +1,31 @@
+galaxy_info:
+  role_name: opkssh
+  namespace: swebarre
+  author: Jonas Forsberg
+  description: Ansible Role to install and manage opkssh wich is a tool which enables ssh to be used with OpenID Connect allowing SSH access to be managed via identities like alice@example.com instead of long-lived SSH keys. This role is not affiliated with the OpenPubkey organization or the opkssh team.
+  license: MIT
+  min_ansible_version: "2.1"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - 22.04
+        - 24.04
+    - name: arch
+      versions:
+        - latest
+    - name: openSUSE
+      versions:
+        - 15.6
+        - Tumbleweed
+    - name: RockyLinux
+      versions:
+        - 9
+
+  galaxy_tags:
+    - ssh
+    - opkssh
+    - OpenID
+    - OpenPubkey
+
+dependencies: []

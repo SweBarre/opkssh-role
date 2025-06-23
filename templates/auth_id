@@ -1,0 +1,4 @@
+{%- if opkssh_auth_id %}
+{%- set content = opkssh_auth_id | join('\n') %}
+{{- content -}}
+{%- endif -%}

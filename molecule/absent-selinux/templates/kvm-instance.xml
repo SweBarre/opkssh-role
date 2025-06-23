@@ -1,0 +1,47 @@
+<domain type="kvm">
+  <name>{{ vm_name }}</name>
+  <memory unit="MiB">{{ memory_mb }}</memory>
+  <vcpu>{{ vcpus }}</vcpu>
+  <os>
+    <type arch="x86_64" machine="q35">hvm</type>
+    <loader readonly="yes" type="pflash">/usr/share/qemu/ovmf-x86_64-code.bin</loader>
+    <nvram>/var/lib/libvirt/qemu/nvram/{{ vm_name }}_vars.fd</nvram>
+    <boot dev="cdrom"/>
+    <boot dev="hd"/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <vmport state="off"/>
+  </features>
+  <cpu mode="host-model"/>
+  <devices>
+    <disk type="volume" device="disk">
+      <driver name="qemu" type="qcow2"/>
+      <source pool="{{ pool_name }}" volume="{{ volume_name }}"/>
+      <target dev="vda" bus="virtio"/>
+    </disk>
+    <disk type="volume" device="cdrom">
+      <driver name="qemu" type="raw"/>
+      <source pool="{{ pool_name }}" volume="{{ iso_name }}"/>
+      <target dev="sda" bus="sata"/>
+      <readonly/>
+    </disk>
+    <interface type="network">
+      <source network="{{ network }}"/>
+      <model type="virtio"/>
+    </interface>
+    <serial type="pty">
+      <target port="0"/>
+    </serial>
+    <console type="pty">
+      <target type="serial" port="0"/>
+    </console>
+    <graphics type="vnc" port="-1" autoport="yes"/>
+    <channel type="unix">
+      <source mode="bind"/>
+      <target type="virtio" name="org.qemu.guest_agent.0"/>
+    </channel>
+  </devices>
+</domain>
+

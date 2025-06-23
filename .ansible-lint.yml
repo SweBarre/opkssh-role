@@ -1,0 +1,3 @@
+exclude_paths:
+  - meta/
+  - molecule/variables/vars.yml

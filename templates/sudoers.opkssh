@@ -1,0 +1,1 @@
+{{ opkssh_user }} ALL=(ALL) NOPASSWD: {{ opkssh_install_path }}/{{ opkssh_binary_name }} readhome *

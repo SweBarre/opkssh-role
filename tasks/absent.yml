@@ -1,0 +1,50 @@
+---
+- name: Remove the opkssh binary
+  ansible.builtin.file:
+    path: "{{ opkssh_install_path }}/{{ opkssh_binary_name }}"
+    state: absent
+
+- name: Remove opkssh user
+  ansible.builtin.user:
+    name: "{{ opkssh_user }}"
+    state: absent
+
+- name: Remove opkssh group
+  ansible.builtin.group:
+    name: "{{ opkssh_group }}"
+    state: absent
+
+- name: Print out the SELinux status
+  ansible.builtin.debug:
+    msg: "SELinux status is: {{ ansible_selinux }}"
+  when: ansible_selinux is defined
+
+- name: Set the correct name for opkssh SELinux module
+  ansible.builtin.set_fact:
+    semodule_name: "{{ 'opkssh' if opkssh_selinux_home else 'opkssh-no-home' }}"
+
+- name: Check if SELinux module is installed and run handlers
+  ansible.builtin.command: semodule -l
+  register: semodule_list
+  changed_when: semodule_name in semodule_list.stdout
+  notify: Remove SELinux module
+  when:
+    - ansible_selinux is defined
+    - ansible_selinux.status not in ['disabled', 'Missing selinux Python library']
+
+- name: Create opkssh configuration directory
+  ansible.builtin.file:
+    path: /etc/opk
+    state: absent
+
+- name: Configure openSSH Server
+  ansible.builtin.file:
+    path: "/etc/ssh/sshd_config.d/{{ opkssh_ssh_config_filename }}"
+    state: absent
+  notify: Restart openSSH Server
+
+- name: Add sudoers file for opkssh
+  ansible.builtin.file:
+    path: "{{ opkssh_sudoers_path }}/opkssh"
+    state: absent
+  when: opkssh_selinux_home

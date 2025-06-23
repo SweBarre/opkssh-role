@@ -1,0 +1,77 @@
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Lint with Ansible Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          path: "${{ github.repository }}"
+
+      - name: Install Ansible Lint and collections
+        working-directory: "${{ github.repository }}"
+        run: |
+          pip3 install --upgrade pip
+          pip3 install --upgrade ansible-lint ansible
+          ansible-galaxy collection install --upgrade -r requirements.yml
+
+      - name: Run Ansible Lint
+        working-directory: "${{ github.repository }}"
+        run: |
+          ansible-lint
+
+  test-os:
+    name: "Test OS compabillity with Molecule"
+    needs: 'lint'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tag:
+          - opensuse-15.6
+          - debian-12
+          - debian-sid
+          - arch
+          - ubuntu-22.04
+          - ubuntu-24.04
+          - rockylinux-9
+          - tumbleweed
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          path: "${{ github.repository }}"
+
+      - name: Run Molucule scenario for operating system testing
+        uses: robertdebock/molecule-action@d3e37309fc9c287d6a3507d172520d37df0e2dda  # v6.0.1
+        with:
+          options: parallel
+          scenario: default
+        env:
+          ANSIBLE_FORCE_COLOR: '1'
+          MOLECULE_TAG: '${{ matrix.tag }}'
+
+  test-absent:
+    name: "Test Role absent tasks"
+    needs: 'lint'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          path: "${{ github.repository }}"
+
+      - name: Run Molucule scenario for absent tasks
+        uses: robertdebock/molecule-action@d3e37309fc9c287d6a3507d172520d37df0e2dda  # v6.0.1
+        with:
+          scenario: absent
+        env:
+          ANSIBLE_FORCE_COLOR: '1'

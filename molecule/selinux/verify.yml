@@ -1,0 +1,294 @@
+---
+- name: 'Verify'
+  hosts: all
+  gather_facts: true
+  become: true
+  vars:
+    openssh_service_name: >-
+      {{ 'ssh.service' if ansible_facts['os_family'] == 'Debian' else 'sshd.service' }}
+  vars_files:
+    - ../../defaults/main.yml
+    - vars.yml
+
+  tasks:
+    - name: 'Gathering Service Facts'
+      ansible.builtin.service_facts:
+
+    - name: 'Assert that openSSH server is enabled and running'
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services[openssh_service_name].state == 'running'
+
+    - name: Get group information
+      ansible.builtin.getent:
+        database: group
+        key: "{{ opkssh_group }}"
+      register: group_info
+      failed_when: false
+
+    - name: "Assert group exists: '{{ opkssh_group }}'"
+      ansible.builtin.assert:
+        that:
+          - group_info is defined
+          - group_info.ansible_facts.getent_group is defined
+          - "opkssh_group in group_info.ansible_facts.getent_group"
+        fail_msg: "Group '{{ opkssh_group }}' does NOT exist"
+        success_msg: "Group '{{ opkssh_group }}' exists"
+
+    - name: Get user information
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ opkssh_user }}"
+      register: user_info
+      failed_when: false
+
+    - name: "Assert user exists: '{{ opkssh_user }}'"
+      ansible.builtin.assert:
+        that:
+          - user_info is defined
+          - user_info.ansible_facts.getent_passwd is defined
+          - "opkssh_user in user_info.ansible_facts.getent_passwd"
+        fail_msg: "User '{{ opkssh_user }}' does NOT exist"
+        success_msg: "User '{{ opkssh_user }}' exists"
+
+    - name: Infer UID_MIN from current system users
+      ansible.builtin.set_fact:
+        uid_min: "{{ lookup('pipe', \"awk -F: '$3>=500{print $3}' /etc/passwd | sort -n | head -1\") | int }}"
+
+    - name: Assert user is a system user
+      ansible.builtin.assert:
+        that:
+          - user_info.ansible_facts.getent_passwd[opkssh_user][1] | int < uid_min | int
+        fail_msg: "User '{{ opkssh_user }}' ({{ user_info.ansible_facts.getent_passwd[opkssh_user][1] }}) is not a system user (UID < {{ uid_min }})"
+        success_msg: "User '{{ opkssh_user }}' ({{ user_info.ansible_facts.getent_passwd[opkssh_user][1] }}) is a system user (UID < {{ uid_min }})"
+
+    - name: Stat the opkssh binary
+      ansible.builtin.stat:
+        path: "{{ opkssh_install_path }}/{{ opkssh_binary_name }}"
+      register: opkssh_file_info
+
+    - name: Assert opkssh binary file exists with correct permissions
+      ansible.builtin.assert:
+        that:
+          - opkssh_file_info.stat.exists
+          - opkssh_file_info.stat.isreg
+          - opkssh_file_info.stat.pw_name == "root"
+          - opkssh_file_info.stat.gr_name == "root"
+          - opkssh_file_info.stat.mode == "0755"
+        fail_msg: "opkssh binary doesn't exist of has incorrect permissions"
+        success_msg: "opkssh binary exists with correct permissions"
+
+    - name: Stat the sudoers file
+      ansible.builtin.stat:
+        path: "{{ opkssh_sudoers_path }}/opkssh"
+      register: sudoers_file_info
+
+    - name: Assert sudoers file exists with correct permissions
+      ansible.builtin.assert:
+        that:
+          - sudoers_file_info.stat.exists
+          - sudoers_file_info.stat.isreg
+          - sudoers_file_info.stat.pw_name == "root"
+          - sudoers_file_info.stat.gr_name == "root"
+          - sudoers_file_info.stat.mode == "0440"
+        fail_msg: "sudoers file doesn't exist or has incorrect permissions, it might not be empty"
+        success_msg: "sudoers file exists with correct permissions"
+
+    - name: Read content of sudoers file
+      ansible.builtin.slurp:
+        src: "{{ opkssh_sudoers_path }}/opkssh"
+      register: sudoers_content
+
+    - name: Decode sudoers content into lines
+      ansible.builtin.set_fact:
+        sudoers_lines: "{{ (sudoers_content.content | b64decode).splitlines() }}"
+
+    - name: Set the expected sudofile line
+      ansible.builtin.set_fact:
+        expected_sudofile_line: "{{ opkssh_user }} ALL=(ALL) NOPASSWD: {{ opkssh_install_path }}/{{ opkssh_binary_name }} readhome *"
+        var: sudoers_lines
+
+    - name: Assers sudoers file content
+      ansible.builtin.assert:
+        that:
+          - sudoers_lines | length == 1
+          - sudoers_lines[0] == expected_sudofile_line
+        fail_msg: "sudoers file doesn't contain the correct information"
+        success_msg: "sudoers file has the correct content"
+
+    - name: Stat the openSSH config file
+      ansible.builtin.stat:
+        path: "/etc/ssh/sshd_config.d/{{ opkssh_ssh_config_filename }}"
+      register: openssh_file_info
+
+    - name: Assert openSSH config file exists with correct permissions
+      ansible.builtin.assert:
+        that:
+          - openssh_file_info.stat.exists
+          - openssh_file_info.stat.isreg
+          - openssh_file_info.stat.pw_name == "root"
+          - openssh_file_info.stat.gr_name == "root"
+          - openssh_file_info.stat.mode == "0644"
+        fail_msg: "openSSH config file doesn't exist of has incorrect permissions, it might not be empty"
+        success_msg: "openSSH config file exists with correct permissions"
+
+    - name: Read content of openSSH config file
+      ansible.builtin.slurp:
+        src: "/etc/ssh/sshd_config.d/{{ opkssh_ssh_config_filename }}"
+      register: openssh_content
+
+    - name: Decode openSSH config content into lines
+      ansible.builtin.set_fact:
+        openssh_lines: "{{ (openssh_content.content | b64decode).splitlines() }}"
+
+    - name: Set the expected openSSH config file lines
+      ansible.builtin.set_fact:
+        expected_openssh_lines:
+          - "AuthorizedKeysCommand {{ opkssh_install_path }}/{{ opkssh_binary_name }} verify %u %k %t"
+          - "AuthorizedKeysCommandUser {{ opkssh_user }}"
+        var: openssh_lines
+
+    - name: Assers openSSH config file content
+      ansible.builtin.assert:
+        that:
+          - openssh_lines | length == expected_openssh_lines | length
+          - openssh_lines[0] == expected_openssh_lines[0]
+          - openssh_lines[1] == expected_openssh_lines[1]
+        fail_msg: "openSSH config file doesn't contain the correct information"
+        success_msg: "openSSH config file contain the correct information"
+
+    - name: Stat the opkssh configuration directory
+      ansible.builtin.stat:
+        path: /etc/opk
+      register: opkssh_dir_info
+
+    - name: Assert opkssh configuration directory with correct permissions
+      ansible.builtin.assert:
+        that:
+          - opkssh_dir_info.stat.exists
+          - opkssh_dir_info.stat.mode == "0750"
+          - opkssh_dir_info.stat.pw_name == "root"
+          - opkssh_dir_info.stat.gr_name == opkssh_group
+        fail_msg: "/etc/opk is missing or is misconfigured"
+        success_msg: "/etc/opk is configured with correct permissions and ownergship"
+
+    - name: Stat the auth_id
+      ansible.builtin.stat:
+        path: /etc/opk/auth_id
+      register: authid_file_info
+
+    - name: Assert auth_id file exists with correct permissions
+      ansible.builtin.assert:
+        that:
+          - authid_file_info.stat.exists
+          - authid_file_info.stat.isreg
+          - authid_file_info.stat.pw_name == "root"
+          - authid_file_info.stat.gr_name == opkssh_group
+          - authid_file_info.stat.mode == "0640"
+        fail_msg: "auth_id doesn't exist of has incorrect permissions, it might not be empty"
+        success_msg: "auth_id exists with correct permissions"
+
+    - name: Read the contents of /etc/opk/auth_id
+      ansible.builtin.slurp:
+        src: /etc/opk/auth_id
+      register: auth_id_file
+
+      # This "hack" is needed it opkssh_auth_id line is empty, the jinja template engine
+      # adds an extra line, this is fixed in ansible 2.19 with the preserve_trailing_newlines
+      # parameter, PR https://github.com/ansible/ansible/pull/70930
+    - name: Decode and split the auth_id into lines
+      ansible.builtin.set_fact:
+        auth_id_lines: >-
+          {{
+            auth_id_file.content
+            | b64decode
+            | regex_findall('.*')
+            | reject('equalto', '')
+            | list
+          }}
+
+    - name: Assert auth_id file content matches expected variable
+      ansible.builtin.assert:
+        that:
+          - auth_id_lines == opkssh_auth_id
+        fail_msg: "The content of /etc/opk/auth_id does not match opkssh_auth_id"
+        success_msg: "The content of /etc/opk/auth_id matches opkssh_auth_id"
+
+    - name: Stat the policy.d configuration directory
+      ansible.builtin.stat:
+        path: /etc/opk/policy.d
+      register: policyd_dir_info
+
+    - name: Assert policy.d configuration directory with correct permissions
+      ansible.builtin.assert:
+        that:
+          - policyd_dir_info.stat.exists
+          - policyd_dir_info.stat.mode == "0750"
+          - policyd_dir_info.stat.pw_name == "root"
+          - policyd_dir_info.stat.gr_name == opkssh_group
+        fail_msg: "/etc/opk/policy.d is missing or is misconfigured"
+        success_msg: "/etc/opk/policy.d is configured with correct permissions and ownergship"
+
+    - name: Stat the config.yml file
+      ansible.builtin.stat:
+        path: "/etc/opk/config.yml"
+      register: config_file_info
+
+    - name: Assert config.yml file exists with correct permissions
+      ansible.builtin.assert:
+        that:
+          - config_file_info.stat.exists
+          - config_file_info.stat.isreg
+          - config_file_info.stat.pw_name == "root"
+          - config_file_info.stat.gr_name == opkssh_group
+          - config_file_info.stat.mode == "0640"
+        fail_msg: "config.yml file doesn't exist or has incorrect permissions, it might not be empty"
+        success_msg: "config.yml file exists with correct permissions"
+
+    - name: Read the contents of /etc/opk/config.yml
+      ansible.builtin.slurp:
+        src: /etc/opk/config.yml
+      register: config_yml_file
+
+    - name: Decode and split the config.yml into lines
+      ansible.builtin.set_fact:
+        config_yml_parsed: "{{ config_yml_file.content | b64decode | from_yaml }}"
+
+    - name: Assert config.yml file content matches expected variable
+      ansible.builtin.assert:
+        that:
+          - config_yml_parsed == opkssh_config_yml
+        fail_msg: "The content of /etc/opk/config.yml does not match opkssh_auth_id"
+        success_msg: "The content of /etc/opk/config.yml matches opkssh_auth_id"
+
+    - name: Stat the providers file
+      ansible.builtin.stat:
+        path: /etc/opk/providers
+      register: providers_file_info
+
+    - name: Assert providers file exists with correct permissions
+      ansible.builtin.assert:
+        that:
+          - providers_file_info.stat.exists
+          - providers_file_info.stat.isreg
+          - providers_file_info.stat.pw_name == "root"
+          - providers_file_info.stat.gr_name == opkssh_group
+          - providers_file_info.stat.mode == "0640"
+        fail_msg: "providers file doesn't exist or has incorrect permissions, it might not be empty"
+        success_msg: "providers file exists with correct permissions"
+
+    - name: Read content of providers file
+      ansible.builtin.slurp:
+        src: /etc/opk/providers
+      register: providers_content
+
+    - name: Decode providers content into lines
+      ansible.builtin.set_fact:
+        providers_lines: "{{ (providers_content.content | b64decode).splitlines() }}"
+
+    - name: Assers providers file content
+      ansible.builtin.assert:
+        that:
+          - providers_lines == opkssh_providers
+        fail_msg: "providers file doesn't contain the correct information"
+        success_msg: "providers file has the correct content"

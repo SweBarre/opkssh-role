@@ -1,0 +1,17 @@
+<volume type='file'>
+  <name>{{ volume_name }}</name>
+  <key>{{ pool_path }}/{{ volume_name }}.qcow2</key>
+  <source>
+  </source>
+  <capacity unit='bytes'>{{ rocky_image_stat.stat.size }}</capacity>
+  <allocation unit='bytes'>{{ rocky_image_stat.stat.size }}</allocation>
+  <target>
+    <path>{{ pool_path }}/{{ volume_name }}.qcow2</path>
+    <format type='qcow2'/>
+    <permissions>
+      <mode>0644</mode>
+      <owner>0</owner>
+      <group>0</group>
+    </permissions>
+  </target>
+</volume>

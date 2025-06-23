@@ -1,0 +1,6 @@
+openssh_service_name: >-
+  {{ 'ssh' if ansible_facts['os_family'] == 'Debian' else 'sshd' }}
+te_tmp: "{{ '/tmp/opkssh.te' if opkssh_selinux_home else '/tmp/opkssh-no-home.te' }}"
+mod_tmp: "{{ '/tmp/opkssh.mod' if opkssh_selinux_home else '/tmp/opkssh-no-home.mod' }}"
+pp_tmp: "{{ '/tmp/opkssh.pp' if opkssh_selinux_home else '/tmp/opkssh-no-home.pp' }}"
+tefile: "{{ 'opkssh.te' if opkssh_selinux_home else 'opkssh-no-home.te' }}"

@@ -1,0 +1,230 @@
+---
+- name: Create libvirt instance with cloud-init and SSH key
+  hosts: localhost
+  gather_facts: false
+  become: false
+  vars:
+    image_url: https://download.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud-Base.latest.x86_64.qcow2
+    vm_name: instance-rocky9-absent
+    pool_name: molecule-absent
+    pool_path: /tmp/molecule-pool-absent
+    image_path: /tmp/rocky9.qcow2
+    volume_name: "{{ vm_name }}.qcow2"
+    iso_name: "{{ vm_name }}-seed.iso"
+    volume_path: "{{ pool_path }}/{{ volume_name }}"
+    disk_path: "{{ pool_path }}/{{ vm_name }}.qcow2"
+    seed_iso_path: "{{ pool_path }}/{{ iso_name }}"
+    cloud_init_dir: "/tmp/cloudinit_{{ vm_name }}"
+    ssh_key_path: "{{ lookup('env','HOME') + '/.ssh/molecule-' + vm_name }}"
+    ssh_pubkey_path: "{{ ssh_key_path }}.pub"
+    memory_mb: 1024
+    vcpus: 1
+    network: default
+
+  tasks:
+
+    - name: Create the storage pool path
+      ansible.builtin.file:
+        path: "{{ pool_path }}"
+        mode: "0755"
+        state: directory
+
+    - name: Download Rocky Linux cloud image
+      ansible.builtin.get_url:
+        url: "{{ image_url }}"
+        dest: "{{ image_path }}"
+        mode: '0644'
+      when: not lookup('ansible.builtin.file', volume_path, errors='ignore')
+
+    - name: Copy image to instance volume
+      ansible.builtin.copy:
+        src: "{{ image_path }}"
+        dest: "{{ volume_path }}"
+        mode: "0644"
+
+    - name: Define the storage pool
+      community.libvirt.virt_pool:
+        command: define
+        name: "{{ pool_name }}"
+        xml: "{{ lookup('template', 'storage-pool.xml') }}"
+
+    - name: Start the storage pool
+      community.libvirt.virt_pool:
+        command: create
+        name: "{{ pool_name }}"
+
+    - name: Get image file info
+      ansible.builtin.stat:
+        path: "{{ pool_path }}/{{ volume_name }}"
+      register: rocky_image_stat
+
+    - name: Define volume in libvirt
+      community.libvirt.virt_volume:
+        state: present
+        pool: "{{ pool_name }}"
+        name: "{{ volume_name }}"
+        xml: "{{ lookup('template', 'rocky-volume.xml') }}"
+
+    - name: Refresh storage pool to recognize new volume
+      community.libvirt.virt_pool:
+        name: "{{ pool_name }}"
+        command: refresh
+
+    - name: Verify volume is available
+      ansible.builtin.command:
+        cmd: "virsh vol-info --pool {{ pool_name }} {{ volume_name }}"
+      register: rocky_volume_info
+      changed_when: false
+
+    - name: Display volume information
+      ansible.builtin.debug:
+        msg: "Volume '{{ volume_name }}' is available in pool '{{ pool_name }}'"
+      when: rocky_volume_info is defined
+
+
+    - name: Ensure SSH key pair exists
+      community.crypto.openssh_keypair:
+        path: "{{ ssh_key_path }}"
+        type: rsa
+        size: 2048
+        force: false
+        comment: "molecule-libvirt"
+      delegate_to: localhost
+
+    - name: Ensure cloud-init config dir exists
+      ansible.builtin.file:
+        path: "{{ cloud_init_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Write user-data
+      ansible.builtin.copy:
+        dest: "{{ cloud_init_dir }}/user-data"
+        mode: "0644"
+        content: |
+          #cloud-config
+          hostname: {{ vm_name }}
+          ssh_pwauth: false
+          disable_root: true
+          packages:
+            - qemu-guest-agent
+          runcmd:
+            - systemctl enable qemu-guest-agent
+            - systemctl start qemu-guest-agent
+          users:
+            - name: ansible
+              groups: wheel
+              sudo: ALL=(ALL) NOPASSWD:ALL
+              shell: /bin/bash
+              passwd: "$6$rounds=4096$kHXzVcMBv1BOKnEa$U27UpjzAUSSDJK7BFLjv1.Ag6.N1YePmPYH7R9Oe8YFcrnJpxiY8HOCDIVgA2m05tMLcWbiPYdjNtv3JUKcPV/"  # ansible
+              ssh_authorized_keys:
+                - {{ lookup('file', ssh_pubkey_path) }}
+
+    - name: Write meta-data
+      ansible.builtin.copy:
+        dest: "{{ cloud_init_dir }}/meta-data"
+        mode: "0644"
+        content: |
+          instance-id: {{ vm_name }}
+          local-hostname: {{ vm_name }}
+
+    - name: Create cloud-init ISO
+      community.general.iso_create:
+        dest_iso: "{{ seed_iso_path }}"
+        src_files:
+          - "{{ cloud_init_dir }}/user-data"
+          - "{{ cloud_init_dir }}/meta-data"
+        vol_ident: cidata
+        interchange_level: 4
+        joliet: 3
+      when: not lookup('ansible.builtin.file', seed_iso_path, errors='ignore')
+
+    - name: Get iso-image file info
+      ansible.builtin.stat:
+        path: "{{ seed_iso_path }}"
+      register: seed_image_stat
+
+    - name: Refresh storage pool to recognize iso volume
+      community.libvirt.virt_pool:
+        name: "{{ pool_name }}"
+        command: refresh
+
+    - name: Verify iso volume is available
+      ansible.builtin.command:
+        cmd: "virsh vol-info --pool {{ pool_name }} {{ iso_name }}"
+      register: rocky_volume_info
+      changed_when: false
+
+    - name: Display iso volume information
+      ansible.builtin.debug:
+        msg: "Volume '{{ iso_name }}' is available in pool '{{ pool_name }}'"
+      when: rocky_volume_info is defined
+
+    - name: Ensure network is active
+      community.libvirt.virt_net:
+        state: active
+        name: "{{ network }}"
+
+    - name: Define vm from xml
+      community.libvirt.virt:
+        command: define
+        xml: "{{ lookup('template', 'kvm-instance.xml') }}"
+
+    - name: Start vm
+      community.libvirt.virt:
+        state: running
+        name: "{{ vm_name }}"
+
+    - name: Wait for the VM agent to responde and has a IPv4 address
+      ansible.builtin.command:
+        cmd: virsh domifaddr {{ vm_name }} --source agent
+      register: domifaddr_output
+      retries: 20
+      delay: 5
+      changed_when: false
+      until: >
+        (
+          domifaddr_output.stdout_lines
+          | select('search', 'ipv4')
+          | select('search', '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
+          | select('search', '^(?!.*127\.0\.0\.1).*')
+          | select('search', '^(?!.*169\.254).*')
+        ) | length > 0
+
+    - name: Extract IP address from guest agent output
+      ansible.builtin.set_fact:
+        instance_ip: >-
+          {{
+            (
+              domifaddr_output.stdout_lines
+              | select('search', 'ipv4')
+              | select('search', '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
+              | select('search', '^(?!.*127\.0\.0\.1).*')
+              | select('search', '^(?!.*169\.254).*')
+            )[0] | regex_search('([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)')
+          }}
+
+    - name: Fail if no IP was extracted
+      ansible.builtin.fail:
+        msg: "Failed to extract IP address from lease line: {{ vm_lease_line }}"
+      when: instance_ip == ''
+
+    - name: Show discovered IP
+      ansible.builtin.debug:
+        msg: "VM {{ vm_name }} got IP: {{ instance_ip }}"
+
+    - name: Write Molecule instance config
+      ansible.builtin.copy:
+        dest: "{{ lookup('env', 'MOLECULE_INSTANCE_CONFIG') }}"
+        mode: "0644"
+        content: |
+          [
+            {
+              "instance": "{{ vm_name }}",
+              "address": "{{ instance_ip }}",
+              "user": "ansible",
+              "port": 22,
+              "identity_file": "{{ ssh_key_path }}",
+              "ssh_connection": "smart"
+            }
+          ]

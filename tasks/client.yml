@@ -1,0 +1,33 @@
+- name: Set binary name based on architecture
+  ansible.builtin.set_fact:
+    opkssh_binary_arch: >-
+      {{
+        'amd64' if ansible_architecture == 'x86_64'
+        else 'arm64' if ansible_architecture == 'aarch64'
+        else 'unsupported'
+      }}
+
+- name: Fail if unsupported architecture
+  ansible.builtin.fail:
+    msg: "Unsupported architecture: {{ ansible_architecture }}"
+  when: opkssh_binary_arch == 'unsupported'
+
+- name: Download opkssh (latest)
+  ansible.builtin.get_url:
+    url: "https://github.com/{{ opkssh_github_repo }}/releases/latest/download/opkssh-linux-{{ opkssh_binary_arch }}"
+    dest: "{{ opkssh_install_path }}/{{ opkssh_binary_name }}"
+    owner: root
+    group: root
+    mode: "0755"
+    force: true
+  when: opkssh_version == "latest"
+
+- name: "Download opkssh specific version: {{ opkssh_version }}"
+  ansible.builtin.get_url:
+    url: "https://github.com/{{ opkssh_github_repo }}/releases/download/{{ opkssh_version }}/opkssh-linux-{{ opkssh_binary_arch }}"
+    dest: "{{ opkssh_install_path }}/{{ opkssh_binary_name }}"
+    owner: root
+    group: root
+    mode: "0755"
+    checksum: "{{ opkssh_bin_checksum }}"
+  when: opkssh_version != "latest"

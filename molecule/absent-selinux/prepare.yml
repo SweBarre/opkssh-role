@@ -1,0 +1,20 @@
+- name: Prepare
+  hosts: all
+  become: true
+  vars:
+    openssh_package: >-
+      {{ 'openssh' if ansible_facts['os_family'] == 'Archlinux' else 'openssh-server' }}
+  roles:
+    - role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}"
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+      when: ansible_os_family == 'Debian'
+
+    - name: Initialize pacman package database
+      ansible.builtin.command: pacman -Sy --noconfirm
+      args:
+        creates: /var/lib/pacman/sync/core.db
+      when: ansible_facts['os_family'] == 'Archlinux'
