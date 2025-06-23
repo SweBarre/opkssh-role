@@ -57,9 +57,9 @@
     - name: Assert user is a system user
       ansible.builtin.assert:
         that:
-          - user_info.ansible_facts.getent_passwd[opkssh_user][1] | int < uid_min | int
-        fail_msg: "User '{{ opkssh_user }}' ({{ user_info.ansible_facts.getent_passwd[opkssh_user][1] }}) is not a system user (UID < {{ uid_min }})"
-        success_msg: "User '{{ opkssh_user }}' ({{ user_info.ansible_facts.getent_passwd[opkssh_user][1] }}) is a system user (UID < {{ uid_min }})"
+          - user_info.ansible_facts.getent_passwd[opkssh_user][1] | int <= uid_min | int
+        fail_msg: "User '{{ opkssh_user }}' ({{ user_info.ansible_facts.getent_passwd[opkssh_user][1] }}) is not a system user (UID <= {{ uid_min }})"
+        success_msg: "User '{{ opkssh_user }}' ({{ user_info.ansible_facts.getent_passwd[opkssh_user][1] }}) is a system user (UID <= {{ uid_min }})"
 
     - name: Stat the opkssh binary
       ansible.builtin.stat:
