@@ -6,7 +6,7 @@
 
 
 
-Description: Ansible Role to install and manage opkssh wich is a tool which enables ssh to be used with OpenID Connect allowing SSH access to be managed via identities like alice@example.com instead of long-lived SSH keys. This role is not affiliated with the OpenPubkey organization or the opkssh team.
+Description: Ansible role to install and manage opkssh, a tool that enables SSH via OpenID Connect using identities like alice@example.com. This role is not affiliated with OpenPubkey or the opkssh project.
 
 
 
