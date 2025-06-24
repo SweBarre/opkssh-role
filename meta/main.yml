@@ -1,6 +1,6 @@
 galaxy_info:
   role_name: opkssh
-  namespace: SweBarre
+  namespace: swebarre
   author: Jonas Forsberg
   description: Ansible role to install and manage opkssh, a tool that enables SSH via OpenID Connect using identities like alice@example.com. This role is not affiliated with OpenPubkey or the opkssh project.
   license: MIT
