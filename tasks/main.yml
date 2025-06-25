@@ -22,13 +22,6 @@
     msg: "SELinux status is: {{ ansible_selinux }}"
   when: ansible_selinux is defined
 
-- name: Restoring context for opkssh
-  ansible.builtin.command: "restorecon {{ opkssh_install_path }}/{{ opkssh_binary_name }}"
-  changed_when: false
-  when:
-    - ansible_selinux is defined
-    - ansible_selinux.status not in ['disabled', 'Missing selinux Python library']
-
 - name: Set the correct name for opkssh SELinux module
   ansible.builtin.set_fact:
     semodule_name: "{{ 'opkssh' if opkssh_selinux_home else 'opkssh-no-home' }}"

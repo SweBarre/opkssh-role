@@ -21,6 +21,7 @@
     mode: "0755"
     force: true
   when: opkssh_version == "latest"
+  notify: Restore SELinux context for opkssh
 
 - name: "Download opkssh specific version: {{ opkssh_version }}"
   ansible.builtin.get_url:
@@ -31,3 +32,4 @@
     mode: "0755"
     checksum: "{{ opkssh_bin_checksum }}"
   when: opkssh_version != "latest"
+  notify: Restore SELinux context for opkssh
