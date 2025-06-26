@@ -1,0 +1,17 @@
+<volume type='file'>
+  <name>{{ iso_name }}</name>
+  <key>{{ pool_path }}/{{ iso_name }}</key>
+  <source>
+  </source>
+  <capacity unit='bytes'>{{ seed_image_stat.stat.size }}</capacity>
+  <allocation unit='bytes'>{{ seed_image_stat.stat.size }}</allocation>
+  <target>
+    <path>{{ pool_path }}/{{ iso_name }}</path>
+    <format type='raw'/>
+    <permissions>
+      <mode>0644</mode>
+      <owner>0</owner>
+      <group>0</group>
+    </permissions>
+  </target>
+</volume>

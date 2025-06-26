@@ -1,0 +1,57 @@
+<domain type="qemu">
+    <name>{{ vm_name }}</name>
+  <memory unit="MiB">2048</memory>
+  <vcpu>4</vcpu>
+
+  <os>
+    <type arch="aarch64" machine="virt">hvm</type>
+    <loader readonly="yes" type="pflash">/usr/share/qemu/aavmf-aarch64-code.bin</loader>
+    <nvram>/var/lib/libvirt/qemu/nvram/{{ vm_name }}-vm_VARS.fd</nvram>
+    <boot dev="cdrom"/>
+    <boot dev="hd"/>
+  </os>
+
+  <features>
+    <acpi/>
+  </features>
+
+  <cpu mode="custom">
+    <model fallback="allow">cortex-a57</model>
+  </cpu>
+
+  <devices>
+    <disk type="file" device="disk">
+      <driver name="qemu" type="qcow2"/>
+      <source file="{{ pool_path }}/{{ volume_name }}"/>
+      <target dev="vda" bus="virtio"/>
+    </disk>
+
+    <disk type="file" device="cdrom">
+      <driver name="qemu" type="raw"/>
+      <source file="{{ pool_path }}/{{ iso_name }}"/>
+      <target dev="sda" bus="sata"/>
+      <readonly/>
+    </disk>
+
+    <interface type="network">
+      <source network="default"/>
+      <model type="virtio"/>
+    </interface>
+
+    <serial type="pty">
+      <target port="0"/>
+    </serial>
+
+    <console type="pty">
+      <target type="serial" port="0"/>
+    </console>
+
+    <graphics type="vnc" port="-1" autoport="yes"/>
+
+    <channel type="unix">
+      <source mode="bind"/>
+      <target type="virtio" name="org.qemu.guest_agent.0"/>
+    </channel>
+  </devices>
+</domain>
+

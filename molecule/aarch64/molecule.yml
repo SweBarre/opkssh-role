@@ -1,0 +1,22 @@
+---
+dependency:
+  name: galaxy
+  options:
+    requirements-file: requirements.yml
+
+driver:
+  name: libvirt
+
+platforms:
+  - name: aarch-rocky9
+    ssh_user: ansible
+
+provisioner:
+  name: ansible
+  inventory:
+    aarch-rocky9:
+      ansible_user: ansible
+      ansible_private_key_file: ~/.ssh/molecule-aarch-rocky9
+
+verifier:
+  name: ansible

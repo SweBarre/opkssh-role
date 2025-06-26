@@ -1,0 +1,9 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+  become: true
+  roles:
+    - role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}"
+      vars:
+        opkssh_bin_checksum: "sha256:be10ea9af3967c130aec1728201072d25b7e407fabeeddd9ae5ee29b55b87199"

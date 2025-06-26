@@ -21,3 +21,10 @@
       ansible.builtin.package:
         name: "{{ openssh_package }}"
         state: present
+
+    - name: Install the necessary packages
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - file

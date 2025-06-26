@@ -2,6 +2,7 @@
 - name: 'Verify'
   hosts: all
   gather_facts: true
+  become: true
   vars:
     openssh_service_name: >-
       {{ 'ssh.service' if ansible_facts['os_family'] == 'Debian' else 'sshd.service' }}

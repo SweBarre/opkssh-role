@@ -109,7 +109,6 @@ Description: Ansible role to install and manage opkssh, a tool that enables SSH 
 | Create opkssh group | ansible.builtin.group | False |
 | Create opkssh user | ansible.builtin.user | False |
 | Print out the SELinux status | ansible.builtin.debug | True |
-| Restoring context for opkssh | ansible.builtin.command | True |
 | Set the correct name for opkssh SELinux module | ansible.builtin.set_fact | False |
 | Check if SELinux module is installed and run handlers | ansible.builtin.command | True |
 | Create opkssh configuration directory | ansible.builtin.file | False |
