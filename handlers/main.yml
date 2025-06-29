@@ -12,15 +12,6 @@
     - ansible_selinux.status not in ['disabled', 'Missing selinux Python library']
   changed_when: true
 
-- name: Install SELinux module
-  ansible.builtin.copy:
-    src: "{{ tefile }}"
-    dest: "{{ te_tmp }}"
-    owner: root
-    group: root
-    mode: "0640"
-  notify: Compile SELinux module
-
 - name: Compile SELinux module
   ansible.builtin.command:
     argv:
@@ -29,7 +20,7 @@
       - -m
       - -o
       - "{{ mod_tmp }}"
-      - "{{ te_tmp }}"
+      - "/usr/share/opkssh/{{ tefile }}"
   notify: Packaging SELinux module
   changed_when: true
 
@@ -58,7 +49,6 @@
     path: "{{ item }}"
     state: absent
   with_items:
-    - "{{ te_tmp }}"
     - "{{ mod_tmp }}"
     - "{{ pp_tmp }}"
 

@@ -69,10 +69,9 @@ Description: Ansible role to install and manage opkssh, a tool that enables SSH 
 | Var          | Type         | Value       |
 |--------------|--------------|-------------|
 | [openssh_service_name](vars/main.yml#L1)   | str | `<multiline value: folded_strip>` |    
-| [te_tmp](vars/main.yml#L3)   | str | `{{ '/tmp/opkssh.te' if opkssh_selinux_home else '/tmp/opkssh-no-home.te' }}` |    
-| [mod_tmp](vars/main.yml#L4)   | str | `{{ '/tmp/opkssh.mod' if opkssh_selinux_home else '/tmp/opkssh-no-home.mod' }}` |    
-| [pp_tmp](vars/main.yml#L5)   | str | `{{ '/tmp/opkssh.pp' if opkssh_selinux_home else '/tmp/opkssh-no-home.pp' }}` |    
-| [tefile](vars/main.yml#L6)   | str | `{{ 'opkssh.te' if opkssh_selinux_home else 'opkssh-no-home.te' }}` |    
+| [mod_tmp](vars/main.yml#L3)   | str | `{{ '/tmp/opkssh.mod' if opkssh_selinux_home else '/tmp/opkssh-no-home.mod' }}` |    
+| [pp_tmp](vars/main.yml#L4)   | str | `{{ '/tmp/opkssh.pp' if opkssh_selinux_home else '/tmp/opkssh-no-home.pp' }}` |    
+| [tefile](vars/main.yml#L5)   | str | `{{ 'opkssh.te' if opkssh_selinux_home else 'opkssh-no-home.te' }}` |    
 
 
 ### Tasks
@@ -110,7 +109,8 @@ Description: Ansible role to install and manage opkssh, a tool that enables SSH 
 | Create opkssh user | ansible.builtin.user | False |
 | Print out the SELinux status | ansible.builtin.debug | True |
 | Set the correct name for opkssh SELinux module | ansible.builtin.set_fact | False |
-| Check if SELinux module is installed and run handlers | ansible.builtin.command | True |
+| Create opkssh SELinux source directory | ansible.builtin.file | True |
+| Copy the SELinux module source file | ansible.builtin.copy | True |
 | Create opkssh configuration directory | ansible.builtin.file | False |
 | Create opkssh policy directory | ansible.builtin.file | False |
 | Create opkssh providers file | ansible.builtin.template | False |

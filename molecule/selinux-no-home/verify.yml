@@ -4,11 +4,11 @@
   gather_facts: true
   become: true
   vars:
+    tefile: opkssh-no-home.te
     openssh_service_name: >-
       {{ 'ssh.service' if ansible_facts['os_family'] == 'Debian' else 'sshd.service' }}
   vars_files:
     - ../../defaults/main.yml
-    - vars.yml
 
   tasks:
     - name: 'Gathering Service Facts'
@@ -266,3 +266,19 @@
           - providers_lines == opkssh_providers
         fail_msg: "providers file doesn't contain the correct information"
         success_msg: "providers file has the correct content"
+
+    - name: Stat the SELinux module source file
+      ansible.builtin.stat:
+        path: "/usr/share/opkssh/{{ tefile }}"
+      register: te_file
+
+    - name: Assert the SELinux module source file
+      ansible.builtin.assert:
+        that:
+          - te_file.stat.exists
+          - te_file.stat.isreg
+          - te_file.stat.pw_name == "root"
+          - te_file.stat.gr_name == "root"
+          - te_file.stat.mode == "0644"
+        fail_msg: "SELinux module source file doesn't exist or has incorrect permissions, it might not be empty"
+        success_msg: "SELinux module source file exists with correct permissions"

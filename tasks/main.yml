@@ -26,11 +26,25 @@
   ansible.builtin.set_fact:
     semodule_name: "{{ 'opkssh' if opkssh_selinux_home else 'opkssh-no-home' }}"
 
-- name: Check if SELinux module is installed and run handlers
-  ansible.builtin.command: semodule -l
-  register: semodule_list
-  changed_when: semodule_name not in semodule_list.stdout
-  notify: Install SELinux module
+- name: Create opkssh SELinux source directory
+  ansible.builtin.file:
+    path: /usr/share/opkssh
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when:
+    - ansible_selinux is defined
+    - ansible_selinux.status not in ['disabled', 'Missing selinux Python library']
+
+- name: Copy the SELinux module source file
+  ansible.builtin.copy:
+    src: "{{ tefile }}"
+    dest: "/usr/share/opkssh/{{ tefile }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Compile SELinux module
   when:
     - ansible_selinux is defined
     - ansible_selinux.status not in ['disabled', 'Missing selinux Python library']
