@@ -32,9 +32,14 @@
     - ansible_selinux is defined
     - ansible_selinux.status not in ['disabled', 'Missing selinux Python library']
 
-- name: Create opkssh configuration directory
+- name: Remove opkssh configuration directory
   ansible.builtin.file:
     path: /etc/opk
+    state: absent
+
+- name: Remove opkssh SELinux source directory
+  ansible.builtin.file:
+    path: /usr/share/opkssh
     state: absent
 
 - name: Configure openSSH Server

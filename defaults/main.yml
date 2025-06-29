@@ -1,12 +1,7 @@
 # title: Version of opkssh to install
 # required: True
-# description: The version of opkssh to install, if 'latest' is used the role can break idempotency
-opkssh_version: v0.7.0
-
-# title: Checksum of opkssh to install
-# required: True
-# description: The sha256 checksum of the opkssh binary, not used if opkss_version is set to 'latest'
-opkssh_bin_checksum: sha256:047ce46214e94c25820a3345927886c048a93254af329e50fa5e76cc43269556
+# description: The version of opkssh to install, latest or vX.Y.Z
+opkssh_version: latest
 
 # title: Username uses for execution of opkssh
 # required: True

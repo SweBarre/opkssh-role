@@ -12,24 +12,38 @@
     msg: "Unsupported architecture: {{ ansible_architecture }}"
   when: opkssh_binary_arch == 'unsupported'
 
-- name: Download opkssh (latest)
-  ansible.builtin.get_url:
-    url: "https://github.com/{{ opkssh_github_repo }}/releases/latest/download/opkssh-linux-{{ opkssh_binary_arch }}"
-    dest: "{{ opkssh_install_path }}/{{ opkssh_binary_name }}"
-    owner: root
-    group: root
-    mode: "0755"
-    force: true
-  when: opkssh_version == "latest"
-  notify: Restore SELinux context for opkssh
+- name: Set opkssh download base URL
+  ansible.builtin.set_fact:
+    opkssh_download_base_url: >-
+      https://github.com/{{ opkssh_github_repo }}/releases{{ '/latest/download/' if opkssh_version == 'latest' else '/download/' ~ opkssh_version ~ '/' }}
 
-- name: "Download opkssh specific version: {{ opkssh_version }}"
+- name: Download checksum list
+  ansible.builtin.uri:
+    url: "{{ opkssh_download_base_url }}checksums.txt"
+    return_content: true
+  register: checksums_txt
+
+- name: Find the checksums line for opkssh binary
+  ansible.builtin.set_fact:
+    opkssh_checksum_line: >-
+      {{
+        checksums_txt.content.splitlines()
+        | select('search', "opkssh-linux-" ~ opkssh_binary_arch)
+        | list
+        | default([])
+        | first | default('')
+      }}
+
+- name: Extract SHA256 hash from the matched checksum line
+  ansible.builtin.set_fact:
+    opkssh_sha256: "{{ opkssh_checksum_line | regex_search('^([0-9a-f]{64})', '\\1') }}"
+
+- name: "Download opkssh {{ opkssh_version }}"
   ansible.builtin.get_url:
-    url: "https://github.com/{{ opkssh_github_repo }}/releases/download/{{ opkssh_version }}/opkssh-linux-{{ opkssh_binary_arch }}"
+    url: "{{ opkssh_download_base_url }}opkssh-linux-{{ opkssh_binary_arch }}"
     dest: "{{ opkssh_install_path }}/{{ opkssh_binary_name }}"
     owner: root
     group: root
     mode: "0755"
-    checksum: "{{ opkssh_bin_checksum }}"
-  when: opkssh_version != "latest"
+    checksum: "sha256:{{ opkssh_sha256 }}"
   notify: Restore SELinux context for opkssh
