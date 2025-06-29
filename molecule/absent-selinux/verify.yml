@@ -91,12 +91,12 @@
         path: /usr/share/opkssh
       register: opksshselinux_dir_info
 
-    - name: Verify /etc/opk directory was removed
+    - name: Verify /usr/share/opkssh directory was removed
       ansible.builtin.assert:
         that:
           - not opksshselinux_dir_info.stat.exists
-        fail_msg: "/etc/share/opkssh directory still exists"
-        success_msg: "/etc/share/opkssh directory has been removed"
+        fail_msg: "/usr/share/opkssh directory still exists"
+        success_msg: "/usr/share/opkssh directory has been removed"
 
     - name: Check if opkssh SELinux module is still installed
       ansible.builtin.command:
