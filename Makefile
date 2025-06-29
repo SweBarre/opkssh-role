@@ -20,7 +20,7 @@ check-prereqs:
 	@command -v docsible >/dev/null 2>&1 || { echo "❌ 'docsible' not found in PATH. Please install it."; exit 1; }
 	@echo "✅ All prerequisites found."
 
-all:git-clean lint test docs git-clean
+all: lint test docs git-clean
 
 test: test-os test-scenarios
 

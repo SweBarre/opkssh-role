@@ -1,6 +1,5 @@
 ---
 opkssh_version: v0.6.1
-opkssh_bin_checksum: "sha256:61646ef0f977aaa374a31e3135d322b8b29c86d51695eb02642e9e0166ef15dd"
 opkssh_user: foo
 opkssh_group: bar
 opkssh_install_path: /usr/bin
