@@ -37,6 +37,7 @@ jobs:
           set -e
           ansible-galaxy role import --branch ${{ github.ref }} \
             --role-name opkssh \
+            --verbose \
             --server https://galaxy.ansible.com \
             --token "$ANSIBLE_GALAXY_API_KEY" \
             SweBarre opkssh-role
