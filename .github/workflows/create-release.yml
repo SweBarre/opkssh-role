@@ -1,0 +1,56 @@
+on:
+  push:
+    tags:
+      - 'v*'
+
+name: Create Release
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  push-to-galaxy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Important to fetch all tags!
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible
+
+      - name: Publish to Ansible Galaxy
+        env:
+          ANSIBLE_GALAXY_API_KEY: ${{ secrets.ANSIBLE_GALAXY_API_KEY }}
+        run: |
+          #!/bin/bash
+          set -e
+          ansible-galaxy role import --branch ${{ github.ref }} \
+            --role-name opkssh \
+            --server https://galaxy.ansible.com \
+            --token "$ANSIBLE_GALAXY_API_KEY" \
+            SweBarre opkssh-role
+
+  create-github-release:
+    name: Create GitHub Release
+    needs: push-to-galaxy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Create Release
+        run: gh release create ${{ github.ref }} --generate-notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

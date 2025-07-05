@@ -1,0 +1,90 @@
+# This is a basic workflow that is manually triggered
+
+name: Bump version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        # Friendly description to be shown in the UI instead of 'name'
+        description: 'Semver type of new version (major / minor / patch)'
+        # Input has to be provided for the workflow to run
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  # This workflow contains a single job called "bump-version"
+  bump-version:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Check out the content (source branch).  Use a deploy key so that
+    # when we push changes, it will trigger the release workflow
+    # run that runs on: tag. (Using the GitHub token would
+    # not run the workflow to prevent infinite recursion.)
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Setup Git
+        run: |
+          git config user.name 'Jonas Forsberg'
+          git config user.email 'barregargamel@gmail.com'
+
+      - name: Bump version
+        env:
+          BUMP_TYPE: ${{ github.event.inputs.version }}
+        run: |
+          #!/bin/bash
+          set -e
+
+          echo "Fetching all tags..."
+          git fetch --tags
+
+          # Get latest tag (assuming format v1.2.3)
+          LATEST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+
+          if [[ -z "$LATEST_TAG" ]]; then
+            echo "No tags found. Starting from v0.0.0"
+            LATEST_TAG="v0.0.0"
+          fi
+          echo "Latest tag: $LATEST_TAG"
+
+          # Strip the 'v' and split into parts
+          VERSION=${LATEST_TAG#v}
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+
+          echo "Current version: $VERSION"
+          echo "Bump type: $BUMP_TYPE"
+
+          case "$BUMP_TYPE" in
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            *)
+              echo "Invalid bump type: $BUMP_TYPE"
+              exit 1
+              ;;
+          esac
+
+          NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+          echo "New tag: $NEW_TAG"
+
+          git tag "$NEW_TAG"
+          git push origin main --tags
