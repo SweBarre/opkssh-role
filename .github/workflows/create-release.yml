@@ -30,11 +30,14 @@ jobs:
           pip install ansible
 
       - name: Wait for GitHub to expose tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Sleeping 15s to allow GitHub to register the tag..."
-          sleep 15
-          echo "Checking if tag ${{ github.ref_name }} is visible via GitHub API..."
-          curl -sSf https://api.github.com/repos/SweBarre/opkssh-role/git/refs/tags/${{ github.ref_name }}
+          for i in {1..5}; do
+            echo "Checking tag availability... attempt $i"
+            curl -sSf -H "Authorization: token $GITHUB_TOKEN" \
+              https://api.github.com/repos/SweBarre/opkssh-role/git/refs/tags/${{ github.ref_name }} && break || sleep 5
+          done
 
       - name: Publish to Ansible Galaxy
         env:
