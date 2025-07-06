@@ -29,23 +29,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install ansible
 
-      - name: Wait for GitHub to expose tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          for i in {1..5}; do
-            echo "Checking tag availability... attempt $i"
-            curl -sSf -H "Authorization: token $GITHUB_TOKEN" \
-              https://api.github.com/repos/SweBarre/opkssh-role/git/refs/tags/${{ github.ref_name }} && break || sleep 5
-          done
-
       - name: Publish to Ansible Galaxy
         env:
           ANSIBLE_GALAXY_API_KEY: ${{ secrets.ANSIBLE_GALAXY_API_KEY }}
         run: |
           #!/bin/bash
           set -e
-          ansible-galaxy role import --branch ${{ github.ref }} \
+          ansible-galaxy role import --branch ${{ github.ref_name }} \
             --role-name opkssh \
             --verbose \
             --server https://galaxy.ansible.com \
