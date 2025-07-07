@@ -13,7 +13,7 @@ opkssh_user: opksshuser
 # description: Group ownership for installed files and directories
 opkssh_group: opksshuser
 
-# title: Boolean to set wether to use the home directory policy feature
+# title: Boolean to set whether to use the home directory policy feature
 # required: True
 opkssh_selinux_home: true
 

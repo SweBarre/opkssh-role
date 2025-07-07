@@ -176,7 +176,7 @@
         state: running
         name: "{{ vm_name }}"
 
-    - name: Wait for the VM agent to responde and has a IPv4 address
+    - name: Wait for the VM agent to respond and has a IPv4 address
       ansible.builtin.command:
         cmd: virsh domifaddr {{ vm_name }} --source agent
       register: domifaddr_output
