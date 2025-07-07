@@ -1,10 +1,26 @@
 on:
   push:
+    paths:
+      - 'defaults/**'
+      - 'files/**'
+      - 'handlers/**'
+      - 'molecule/**'
+      - 'tasks/**'
+      - 'templates/**'
+      - 'vars/**'
     branches:
       - main
     tags-ignore:
       - '*'
   pull_request:
+    paths:
+      - 'defaults/**'
+      - 'files/**'
+      - 'handlers/**'
+      - 'molecule/**'
+      - 'tasks/**'
+      - 'templates/**'
+      - 'vars/**'
     branches:
       - main
 

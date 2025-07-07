@@ -1,0 +1,30 @@
+name: Enforce .yml Extension
+
+on:
+  push:
+    paths:
+      - '**/*.yaml'
+  pull_request:
+    paths:
+      - '**/*.yaml'
+
+jobs:
+  check-yaml-extension:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Find .yaml files
+        run: |
+          YAML_FILES=$(find . -type f -name "*.yaml")
+          if [ -n "$YAML_FILES" ]; then
+            echo "❌ The following files use the .yaml extension and should be renamed to .yml:"
+            echo "$YAML_FILES"
+            echo ""
+            echo "👉 Please rename them to use the .yml extension instead."
+            exit 1
+          else
+            echo "✅ No .yaml files found."
+          fi
+
