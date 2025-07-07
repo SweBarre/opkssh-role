@@ -25,7 +25,7 @@ all: lint test docs git-clean
 test: test-os test-scenarios
 
 docs: check-prereqs
-	docsible -nob -nod -r . -com -rt github -a
+	docsible -nob -nod -r . -com -ru https://github.com/SweBarre/opkssh-role -rt github -rb main -a
 
 lint: check-prereqs
 	act pull_request --job lint

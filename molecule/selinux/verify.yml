@@ -108,7 +108,7 @@
         expected_sudofile_line: "{{ opkssh_user }} ALL=(ALL) NOPASSWD: {{ opkssh_install_path }}/{{ opkssh_binary_name }} readhome *"
         var: sudoers_lines
 
-    - name: Assers sudoers file content
+    - name: Assert sudoers file content
       ansible.builtin.assert:
         that:
           - sudoers_lines | length == 1
@@ -148,7 +148,7 @@
           - "AuthorizedKeysCommandUser {{ opkssh_user }}"
         var: openssh_lines
 
-    - name: Assers openSSH config file content
+    - name: Assert openSSH config file content
       ansible.builtin.assert:
         that:
           - openssh_lines | length == expected_openssh_lines | length
@@ -286,7 +286,7 @@
       ansible.builtin.set_fact:
         providers_lines: "{{ (providers_content.content | b64decode).splitlines() }}"
 
-    - name: Assers providers file content
+    - name: Assert providers file content
       ansible.builtin.assert:
         that:
           - providers_lines == opkssh_providers

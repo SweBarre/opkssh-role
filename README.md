@@ -2,7 +2,7 @@
 
 # 📃 Role overview
 
-## opkssh
+## opkssh-role
 
 
 
@@ -26,23 +26,23 @@ Description: Ansible role to install and manage opkssh, a tool that enables SSH 
 
 | Var          | Type         | Value       |Required    | Title       |
 |--------------|--------------|-------------|------------|-------------|
-| [opkssh_version](defaults/main.yml#L4)   | str | `latest` |    True  |  Version of opkssh to install |
-| [opkssh_user](defaults/main.yml#L9)   | str | `opksshuser` |    True  |  Username uses for execution of opkssh |
-| [opkssh_group](defaults/main.yml#L14)   | str | `opksshuser` |    True  |  Default group for opkssh user |
-| [opkssh_selinux_home](defaults/main.yml#L18)   | bool | `True` |    True  |  Boolean to set wether to use the home directory policy feature |
-| [opkssh_restart_ssh](defaults/main.yml#L22)   | bool | `True` |    True  |  Boolean to set if openSSH server should be restarted or not |
-| [opkssh_install_path](defaults/main.yml#L26)   | str | `/usr/local/bin` |    True  |  Path to where opkssh binary should be installed |
-| [opkssh_binary_name](defaults/main.yml#L30)   | str | `opkssh` |    True  |  Name of the opkssh binary |
-| [opkssh_github_repo](defaults/main.yml#L34)   | str | `openpubkey/opkssh` |    True  |  GitHub repository to download the opkssh binary from |
-| [opkssh_sudoers_path](defaults/main.yml#L38)   | str | `/etc/sudoers.d` |    True  |  Path to the sudoers file for opkssh |
-| [opkssh_ssh_config_filename](defaults/main.yml#L42)   | str | `60-opk-ssh.conf` |    True  |  Name of the opkssh openSSH config file |
-| [opkssh_config_yml](defaults/main.yml#L47)   | dict | `{}` |    True  |  Content of /etc/opk/config.yml |
-| [opkssh_auth_id](defaults/main.yml#L52)   | list | `[]` |    True  |  Content of /etc/opk/auth_id file |
-| [opkssh_providers](defaults/main.yml#L57)   | list | `[]` |    True  |  Content of /etc/opk/providers |
-| [opkssh_providers.**0**](defaults/main.yml#L58)   | str | `https://accounts.google.com 206584157355-7cbe4s640tvm7naoludob4ut1emii7sf.apps.googleusercontent.com 24h` |    None  |  None |
-| [opkssh_providers.**1**](defaults/main.yml#L59)   | str | `https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304b66dad/v2.0 096ce0a3-5e72-4da8-9c86-12924b294a01 24h` |    None  |  None |
-| [opkssh_providers.**2**](defaults/main.yml#L60)   | str | `https://gitlab.com 8d8b7024572c7fd501f64374dec6bba37096783dfcd792b3988104be08cb6923 24h` |    None  |  None |
-| [opkssh_providers.**3**](defaults/main.yml#L61)   | str | `https://issuer.hello.coop app_xejobTKEsDNSRd5vofKB2iay_2rN 24h` |    None  |  None |
+| [opkssh_version](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L4)   | str | `latest` |    True  |  Version of opkssh to install |
+| [opkssh_user](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L9)   | str | `opksshuser` |    True  |  Username uses for execution of opkssh |
+| [opkssh_group](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L14)   | str | `opksshuser` |    True  |  Default group for opkssh user |
+| [opkssh_selinux_home](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L18)   | bool | `True` |    True  |  Boolean to set whether to use the home directory policy feature |
+| [opkssh_restart_ssh](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L22)   | bool | `True` |    True  |  Boolean to set if openSSH server should be restarted or not |
+| [opkssh_install_path](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L26)   | str | `/usr/local/bin` |    True  |  Path to where opkssh binary should be installed |
+| [opkssh_binary_name](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L30)   | str | `opkssh` |    True  |  Name of the opkssh binary |
+| [opkssh_github_repo](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L34)   | str | `openpubkey/opkssh` |    True  |  GitHub repository to download the opkssh binary from |
+| [opkssh_sudoers_path](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L38)   | str | `/etc/sudoers.d` |    True  |  Path to the sudoers file for opkssh |
+| [opkssh_ssh_config_filename](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L42)   | str | `60-opk-ssh.conf` |    True  |  Name of the opkssh openSSH config file |
+| [opkssh_config_yml](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L47)   | dict | `{}` |    True  |  Content of /etc/opk/config.yml |
+| [opkssh_auth_id](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L52)   | list | `[]` |    True  |  Content of /etc/opk/auth_id file |
+| [opkssh_providers](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L57)   | list | `[]` |    True  |  Content of /etc/opk/providers |
+| [opkssh_providers.**0**](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L58)   | str | `https://accounts.google.com 206584157355-7cbe4s640tvm7naoludob4ut1emii7sf.apps.googleusercontent.com 24h` |    None  |  None |
+| [opkssh_providers.**1**](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L59)   | str | `https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304b66dad/v2.0 096ce0a3-5e72-4da8-9c86-12924b294a01 24h` |    None  |  None |
+| [opkssh_providers.**2**](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L60)   | str | `https://gitlab.com 8d8b7024572c7fd501f64374dec6bba37096783dfcd792b3988104be08cb6923 24h` |    None  |  None |
+| [opkssh_providers.**3**](https://github.com/SweBarre/opkssh-role/blob/main/defaults/main.yml#L61)   | str | `https://issuer.hello.coop app_xejobTKEsDNSRd5vofKB2iay_2rN 24h` |    None  |  None |
 <details>
 <summary><b>🖇️ Full descriptions for vars in defaults/main.yml</b></summary>
 <br>
@@ -66,10 +66,10 @@ Description: Ansible role to install and manage opkssh, a tool that enables SSH 
 
 | Var          | Type         | Value       |
 |--------------|--------------|-------------|
-| [openssh_service_name](vars/main.yml#L1)   | str | `<multiline value: folded_strip>` |    
-| [mod_tmp](vars/main.yml#L3)   | str | `{{ '/tmp/opkssh.mod' if opkssh_selinux_home else '/tmp/opkssh-no-home.mod' }}` |    
-| [pp_tmp](vars/main.yml#L4)   | str | `{{ '/tmp/opkssh.pp' if opkssh_selinux_home else '/tmp/opkssh-no-home.pp' }}` |    
-| [tefile](vars/main.yml#L5)   | str | `{{ 'opkssh.te' if opkssh_selinux_home else 'opkssh-no-home.te' }}` |    
+| [openssh_service_name](https://github.com/SweBarre/opkssh-role/blob/main/vars/main.yml#L1)   | str | `<multiline value: folded_strip>` |    
+| [mod_tmp](https://github.com/SweBarre/opkssh-role/blob/main/vars/main.yml#L3)   | str | `{{ '/tmp/opkssh.mod' if opkssh_selinux_home else '/tmp/opkssh-no-home.mod' }}` |    
+| [pp_tmp](https://github.com/SweBarre/opkssh-role/blob/main/vars/main.yml#L4)   | str | `{{ '/tmp/opkssh.pp' if opkssh_selinux_home else '/tmp/opkssh-no-home.pp' }}` |    
+| [tefile](https://github.com/SweBarre/opkssh-role/blob/main/vars/main.yml#L5)   | str | `{{ 'opkssh.te' if opkssh_selinux_home else 'opkssh-no-home.te' }}` |    
 
 
 ### Tasks

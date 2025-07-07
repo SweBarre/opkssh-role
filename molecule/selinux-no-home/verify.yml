@@ -122,7 +122,7 @@
           - "AuthorizedKeysCommandUser {{ opkssh_user }}"
         var: openssh_lines
 
-    - name: Assers openSSH config file content
+    - name: Assert openSSH config file content
       ansible.builtin.assert:
         that:
           - openssh_lines | length == expected_openssh_lines | length
@@ -260,7 +260,7 @@
       ansible.builtin.set_fact:
         providers_lines: "{{ (providers_content.content | b64decode).splitlines() }}"
 
-    - name: Assers providers file content
+    - name: Assert providers file content
       ansible.builtin.assert:
         that:
           - providers_lines == opkssh_providers
