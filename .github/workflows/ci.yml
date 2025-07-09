@@ -69,10 +69,9 @@ jobs:
           path: "${{ github.repository }}"
 
       - name: Run Molucule scenario for operating system testing
-        uses: robertdebock/molecule-action@d3e37309fc9c287d6a3507d172520d37df0e2dda  # v6.0.1
+        uses: gofrolist/molecule-action@ede898890efac66bcd5611cedf1ef1809b6d8956  # v2.7.66
         with:
-          options: parallel
-          scenario: default
+          molecule_args: --parallel --scenario-name default
         env:
           ANSIBLE_FORCE_COLOR: '1'
           MOLECULE_TAG: '${{ matrix.tag }}'
@@ -88,8 +87,8 @@ jobs:
           path: "${{ github.repository }}"
 
       - name: Run Molucule scenario for absent tasks
-        uses: robertdebock/molecule-action@d3e37309fc9c287d6a3507d172520d37df0e2dda  # v6.0.1
+        uses: gofrolist/molecule-action@ede898890efac66bcd5611cedf1ef1809b6d8956  # v2.7.66
         with:
-          scenario: absent
+          molecule_args: --scenario-name absent
         env:
           ANSIBLE_FORCE_COLOR: '1'
