@@ -27,4 +27,3 @@ jobs:
           else
             echo "✅ No .yaml files found."
           fi
-
