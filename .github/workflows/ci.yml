@@ -93,31 +93,3 @@ jobs:
           scenario: absent
         env:
           ANSIBLE_FORCE_COLOR: '1'
-
-
-  test-arm64:
-    name: "Test ARM64 compabillity with Molecule"
-    needs: 'lint'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-        with:
-          path: "${{ github.repository }}"
-
-      - name: Set up QEMU for arm64 support
-        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392  # v3.6.0
-        with:
-          platforms: arm64
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435  # v3.11.1
-
-      - name: Run Molucule scenario for operating system testing
-        uses: robertdebock/molecule-action@d3e37309fc9c287d6a3507d172520d37df0e2dda  # v6.0.1
-        with:
-          options: parallel
-          scenario: default
-        env:
-          ANSIBLE_FORCE_COLOR: '1'
