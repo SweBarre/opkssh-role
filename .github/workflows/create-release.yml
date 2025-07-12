@@ -1,23 +1,23 @@
+name: Create Release
+
 on:
   push:
     tags:
       - 'v*'
 
-name: Create Release
-
 permissions:
-  id-token: write
   contents: read
 
 jobs:
   push-to-galaxy:
+    name: Package and push role to ansible-galaxy
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           fetch-depth: 0  # Important to fetch all tags!
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -35,7 +35,7 @@ jobs:
         run: |
           #!/bin/bash
           set -e
-          ansible-galaxy role import --branch ${{ github.ref_name }} \
+          ansible-galaxy role import --branch "$GITHUB_REF_NAME" \
             --role-name opkssh \
             --verbose \
             --server https://galaxy.ansible.com \
@@ -50,8 +50,11 @@ jobs:
       contents: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+
       - name: Create Release
-        run: gh release create ${{ github.ref }} --generate-notes
+        run: gh release create "$GITHUB_REF" --generate-notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,3 +1,8 @@
+name: Continuous integration
+
+permissions:
+  contents: read
+
 on:
   push:
     paths:
@@ -33,6 +38,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           path: "${{ github.repository }}"
+          persist-credentials: false
 
       - name: Install Ansible Lint and collections
         working-directory: "${{ github.repository }}"
@@ -67,6 +73,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           path: "${{ github.repository }}"
+          persist-credentials: false
 
       - name: Run Molucule scenario for operating system testing
         uses: gofrolist/molecule-action@ede898890efac66bcd5611cedf1ef1809b6d8956  # v2.7.66
@@ -85,6 +92,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           path: "${{ github.repository }}"
+          persist-credentials: false
 
       - name: Run Molucule scenario for absent tasks
         uses: gofrolist/molecule-action@ede898890efac66bcd5611cedf1ef1809b6d8956  # v2.7.66
