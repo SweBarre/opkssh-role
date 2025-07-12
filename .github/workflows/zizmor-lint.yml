@@ -1,28 +1,25 @@
-name: Lint GitHub Workflows with Zizmor
-
-permissions:
-  contents: read
+name: GitHub Actions Security Analysis with zizmor 🌈
 
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/*.yml"
   push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/*.yml"
+    branches: ["main"]
+  pull_request:
+    branches: ["**"]
+
+permissions: {}
 
 jobs:
   zizmor:
-    name: Run Zizmor Linter
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read # only needed for private repos
+      actions: read # only needed for private repos
     steps:
-      - name: Check out code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
-      - name: Run Zizmor
-        uses: zizmor/zizmor-action@1cc8f934e6fad1414fbfc420bd02b0c325d9daab  # v1.11.0
-
+      - name: Run zizmor 🌈
+        uses: zizmorcore/zizmor-action@f52a838cfabf134edcbaa7c8b3677dde20045018 # v0.1.1
