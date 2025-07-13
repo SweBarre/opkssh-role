@@ -3,5 +3,12 @@
   "extends": [
     "config:recommended",
     "helpers:pinGitHubActionDigests"
-  ]
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": [
+        "docker"
+      ],
+      "pinDigests": true
+    }
 }
