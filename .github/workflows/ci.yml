@@ -113,7 +113,7 @@ jobs:
           persist-credentials: false
 
       - name: Run Molucule scenario for unsupported-version
-        uses: gofrolist/molecule-action@ede898890efac66bcd5611cedf1ef1809b6d8956  # v2.7.66
+        uses: gofrolist/molecule-action@0cf0655c858728a5ccb01c95056aa68bbe2c4c95  # v2.7.70
         with:
           molecule_args: --scenario-name unsupported-version
         env:
