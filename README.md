@@ -100,19 +100,19 @@ Description: Ansible role to install and manage opkssh, a tool that enables SSH 
 | Download checksum list | ansible.builtin.uri | False |
 | Find the checksums line for opkssh binary | ansible.builtin.set_fact | False |
 | Extract SHA256 hash from the matched checksum line | ansible.builtin.set_fact | False |
-| Download opkssh {{ opkssh_version }} | ansible.builtin.get_url | False |
+| Download opkssh {{ version_installed }} | ansible.builtin.get_url | False |
 
 #### File: tasks/main.yml
 
 | Name | Module | Has Conditions |
 | ---- | ------ | -------------- |
+| Fail if opkssh_version is not 'latest' and is lower than v0.9.0 | ansible.builtin.fail | True |
+| Get latest release info from GitHub API | ansible.builtin.uri | True |
+| Set opkssh version installed | ansible.builtin.set_fact | False |
 | Install opkssh binary | ansible.builtin.include_tasks | False |
 | Create opkssh group | ansible.builtin.group | False |
 | Create opkssh user | ansible.builtin.user | False |
-| Print out the SELinux status | ansible.builtin.debug | True |
-| Set the correct name for opkssh SELinux module | ansible.builtin.set_fact | False |
-| Create opkssh SELinux source directory | ansible.builtin.file | True |
-| Copy the SELinux module source file | ansible.builtin.copy | True |
+| Configure SELinux | ansible.builtin.include_tasks | True |
 | Create opkssh configuration directory | ansible.builtin.file | False |
 | Create opkssh policy directory | ansible.builtin.file | False |
 | Create opkssh providers file | ansible.builtin.template | False |
@@ -120,6 +120,14 @@ Description: Ansible role to install and manage opkssh, a tool that enables SSH 
 | Create the auth_id file for opkssh | ansible.builtin.template | False |
 | Configure openSSH Server | ansible.builtin.template | False |
 | Add sudoers file for opkssh | ansible.builtin.template | True |
+
+#### File: tasks/selinux.yml
+
+| Name | Module | Has Conditions |
+| ---- | ------ | -------------- |
+| Set the correct name for opkssh SELinux module | ansible.builtin.set_fact | False |
+| Create opkssh SELinux source directory | ansible.builtin.file | False |
+| Download SELinux Type Enforcement file {{ semodule_name }} | ansible.builtin.get_url | False |
 
 
 

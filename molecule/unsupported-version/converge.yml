@@ -1,0 +1,20 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+  vars:
+    opkssh_version: v0.8.0
+  tasks:
+    - name: Include role in a block statement
+      block:
+        - name: Apply role, expect failure due to unsupported version
+          ansible.builtin.include_role:
+            name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}"
+      rescue:
+        - name: Save failure marker
+          ansible.builtin.copy:
+            dest: /tmp/opkssh_version_failure.txt
+            owner: root
+            group: root
+            mode: "0644"
+            content: "role failed as expected\n"

@@ -1,0 +1,22 @@
+---
+role_name_check: 1
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: 'unsupported-version-${MOLECULE_TAG:-tumbleweed}'
+    image: '${MOLECULE_IMAGE:-ghcr.io/swebarre/systemd-containers}:${MOLECULE_TAG:-tumbleweed}'
+    pre_build_image: true
+    volumes:
+      - '/sys/fs/cgroup:/sys/fs/cgroup'
+      - '/var/lib/containerd'
+    cgroupns_mode: 'host'
+    privileged: true
+provisioner:
+  name: 'ansible'
+  config_options:
+    defaults:
+      become: false
+verifier:
+  name: 'ansible'
