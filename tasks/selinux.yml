@@ -1,0 +1,21 @@
+---
+- name: Set the correct name for opkssh SELinux module
+  ansible.builtin.set_fact:
+    semodule_name: "{{ 'opkssh' if opkssh_selinux_home else 'opkssh-no-home' }}"
+
+- name: Create opkssh SELinux source directory
+  ansible.builtin.file:
+    path: /usr/share/opkssh
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: "Download SELinux Type Enforcement file {{ semodule_name }}"
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/{{ opkssh_github_repo }}/{{ version_installed }}/te-files/{{ semodule_name }}.te"
+    dest: "/usr/share/opkssh/{{ semodule_name }}.te"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Compile SELinux module

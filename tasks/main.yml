@@ -1,4 +1,23 @@
 ---
+- name: Fail if opkssh_version is not 'latest' and is lower than v0.9.0
+  ansible.builtin.fail:
+    msg: "opkssh_version must be 'latest' or >= v0.9.0 (current: {{ opkssh_version }})"
+  when:
+    - opkssh_version != 'latest'
+    - (opkssh_version | regex_replace('^v', '')) is version('0.9.0', '<', version_type='semver')
+
+- name: Get latest release info from GitHub API
+  ansible.builtin.uri:
+    url: "https://api.github.com/repos/{{ opkssh_github_repo }}/releases/latest"
+    return_content: true
+  register: release_info
+  when: opkssh_version == "latest"
+
+- name: Set opkssh version installed
+  ansible.builtin.set_fact:
+    version_installed: >-
+      {{ release_info.json.tag_name if opkssh_version == "latest" else opkssh_version }}
+
 - name: Install opkssh binary
   ansible.builtin.include_tasks:
     file: client.yml
@@ -17,34 +36,9 @@
     create_home: false
     group: "{{ opkssh_group }}"
 
-- name: Print out the SELinux status
-  ansible.builtin.debug:
-    msg: "SELinux status is: {{ ansible_selinux }}"
-  when: ansible_selinux is defined
-
-- name: Set the correct name for opkssh SELinux module
-  ansible.builtin.set_fact:
-    semodule_name: "{{ 'opkssh' if opkssh_selinux_home else 'opkssh-no-home' }}"
-
-- name: Create opkssh SELinux source directory
-  ansible.builtin.file:
-    path: /usr/share/opkssh
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-  when:
-    - ansible_selinux is defined
-    - ansible_selinux.status not in ['disabled', 'Missing selinux Python library']
-
-- name: Copy the SELinux module source file
-  ansible.builtin.copy:
-    src: "{{ tefile }}"
-    dest: "/usr/share/opkssh/{{ tefile }}"
-    owner: root
-    group: root
-    mode: "0644"
-  notify: Compile SELinux module
+- name: Configure SELinux
+  ansible.builtin.include_tasks:
+    file: selinux.yml
   when:
     - ansible_selinux is defined
     - ansible_selinux.status not in ['disabled', 'Missing selinux Python library']

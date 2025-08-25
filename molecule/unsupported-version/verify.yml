@@ -1,0 +1,16 @@
+---
+- name: 'Verify'
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Check failure marker exists
+      ansible.builtin.stat:
+        path: /tmp/opkssh_version_failure.txt
+      register: marker
+
+    - name: Assert role failed as expected
+      ansible.builtin.assert:
+        that:
+          - marker.stat.exists
+        fail_msg: "Role did not fail as expected!"

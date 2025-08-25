@@ -15,7 +15,7 @@
 - name: Set opkssh download base URL
   ansible.builtin.set_fact:
     opkssh_download_base_url: >-
-      https://github.com/{{ opkssh_github_repo }}/releases{{ '/latest/download/' if opkssh_version == 'latest' else '/download/' ~ opkssh_version ~ '/' }}
+      https://github.com/{{ opkssh_github_repo }}/releases{{ '/latest/download/' if version_installed == 'latest' else '/download/' ~ version_installed ~ '/' }}
 
 - name: Download checksum list
   ansible.builtin.uri:
@@ -38,7 +38,7 @@
   ansible.builtin.set_fact:
     opkssh_sha256: "{{ opkssh_checksum_line | regex_search('^([0-9a-f]{64})', '\\1') }}"
 
-- name: "Download opkssh {{ opkssh_version }}"
+- name: "Download opkssh {{ version_installed }}"
   ansible.builtin.get_url:
     url: "{{ opkssh_download_base_url }}opkssh-linux-{{ opkssh_binary_arch }}"
     dest: "{{ opkssh_install_path }}/{{ opkssh_binary_name }}"
