@@ -159,6 +159,11 @@ MIT
 No dependencies specified.
 <!-- DOCSIBLE END -->
 
+### Installation
+```
+ansible-galaxy role install SweBarre.opkssh
+```
+
 ### Example Playbooks
 
 #### Install opkssh with the opkssh role default role version (latest)
