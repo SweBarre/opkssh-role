@@ -269,7 +269,7 @@
 
     - name: Stat the SELinux module source file
       ansible.builtin.stat:
-        path: "/usr/share/opkssh/{{ tefile }}"
+        path: "/usr/share/opkssh/opkssh.te"
       register: te_file
 
     - name: Assert the SELinux module source file
@@ -282,3 +282,37 @@
           - te_file.stat.mode == "0644"
         fail_msg: "SELinux module source file doesn't exist or has incorrect permissions, it might not be empty"
         success_msg: "SELinux module source file exists with correct permissions"
+
+    - name: Check if opkssh_selinux_home is on
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          getsebool opkssh_enable_home  2>/dev/null | grep -q 'on$'
+      register: selinux_home
+      changed_when: false
+      failed_when: false
+
+    - name: Check if opkssh_selinux_proxy is on
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          getsebool opkssh_enable_proxy  2>/dev/null | grep -q 'on$'
+      register: selinux_proxy
+      changed_when: false
+      failed_when: false
+
+    - name: Check if opkssh_selinux_squid is on
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          getsebool opkssh_enable_squid  2>/dev/null | grep -q 'on$'
+      register: selinux_squid
+      changed_when: false
+      failed_when: false
+
+    - name: Verify opkssh SELinux boolean are correct"
+      ansible.builtin.assert:
+        that:
+          - selinux_home.rc == 1
+          - selinux_proxy.rc == 1
+          - selinux_squid.rc == 0

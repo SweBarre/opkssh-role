@@ -1,5 +1,5 @@
 ---
-opkssh_version: v0.9.0
+opkssh_version: v0.10.0
 opkssh_user: foo
 opkssh_group: bar
 opkssh_install_path: /usr/bin

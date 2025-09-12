@@ -1,10 +1,10 @@
 ---
-- name: Fail if opkssh_version is not 'latest' and is lower than v0.9.0
+- name: Fail if opkssh_version is not 'latest' and is lower than v0.10.0
   ansible.builtin.fail:
-    msg: "opkssh_version must be 'latest' or >= v0.9.0 (current: {{ opkssh_version }})"
+    msg: "opkssh_version must be 'latest' or >= v0.10.0 (current: {{ opkssh_version }})"
   when:
     - opkssh_version != 'latest'
-    - (opkssh_version | regex_replace('^v', '')) is version('0.9.0', '<', version_type='semver')
+    - (opkssh_version | regex_replace('^v', '')) is version('0.10.0', '<', version_type='semver')
 
 - name: Get latest release info from GitHub API
   ansible.builtin.uri:
