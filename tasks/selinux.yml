@@ -1,8 +1,4 @@
 ---
-- name: Set the correct name for opkssh SELinux module
-  ansible.builtin.set_fact:
-    semodule_name: "{{ 'opkssh' if opkssh_selinux_home else 'opkssh-no-home' }}"
-
 - name: Create opkssh SELinux source directory
   ansible.builtin.file:
     path: /usr/share/opkssh
@@ -11,11 +7,32 @@
     group: root
     mode: '0755'
 
-- name: "Download SELinux Type Enforcement file {{ semodule_name }}"
+- name: "Download SELinux Type Enforcement file opkssh.te"
   ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/{{ opkssh_github_repo }}/{{ version_installed }}/te-files/{{ semodule_name }}.te"
-    dest: "/usr/share/opkssh/{{ semodule_name }}.te"
+    url: "https://raw.githubusercontent.com/{{ opkssh_github_repo }}/refs/tags/{{ version_installed }}/opkssh.te"
+    dest: "/usr/share/opkssh/opkssh.te"
     owner: root
     group: root
     mode: "0644"
   notify: Compile SELinux module
+
+- name: "Running hanlders to make sure the opkssh SELinux module is installed"
+  ansible.builtin.meta: flush_handlers
+
+- name: "Set the opkssh_enable_home SELinux boolean to {{ opkssh_selinux_home }}"
+  ansible.posix.seboolean:
+    name: opkssh_enable_home
+    state: "{{ opkssh_selinux_home }}"
+    persistent: true
+
+- name: "Set the opkssh_enable_squid SELinux boolean to {{ opkssh_selinux_squid }}"
+  ansible.posix.seboolean:
+    name: opkssh_enable_squid
+    state: "{{ opkssh_selinux_squid }}"
+    persistent: true
+
+- name: "Set the opkssh_enable_proxy SELinux boolean to {{ opkssh_selinux_proxy }}"
+  ansible.posix.seboolean:
+    name: opkssh_enable_proxy
+    state: "{{ opkssh_selinux_proxy }}"
+    persistent: true

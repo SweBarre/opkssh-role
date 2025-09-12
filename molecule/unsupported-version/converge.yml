@@ -3,7 +3,7 @@
   hosts: all
   gather_facts: true
   vars:
-    opkssh_version: v0.8.0
+    opkssh_version: v0.9.0
   tasks:
     - name: Include role in a block statement
       block:

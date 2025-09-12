@@ -17,6 +17,16 @@ opkssh_group: opksshuser
 # required: True
 opkssh_selinux_home: true
 
+# title: Enables the Squid proxy ports in opkssh SELinux module.
+# required: True
+# description: Used when system has HTTPS_PROXY set to a Squid proxy
+opkssh_selinux_squid: false
+
+# title: Enables the HTTP Cache ports in opkssh SELinux module.
+# required: Trues
+# description: Used when system has set the HTTPS_PROXY to a general HTTP Proxy. Dynamicly configure ports used with SELinux http_cache_port_t port type
+opkssh_selinux_proxy: false
+
 # title: Boolean to set if openSSH server should be restarted or not
 # required: True
 opkssh_restart_ssh: true

@@ -19,8 +19,8 @@
       - -M
       - -m
       - -o
-      - "{{ mod_tmp }}"
-      - "/usr/share/opkssh/{{ tefile }}"
+      - "/tmp/opkssh.mod"
+      - "/usr/share/opkssh/opkssh.te"
   notify: Packaging SELinux module
   changed_when: true
 
@@ -29,9 +29,9 @@
     argv:
       - semodule_package
       - -o
-      - "{{ pp_tmp }}"
+      - "/tmp/opkssh.pp"
       - -m
-      - "{{ mod_tmp }}"
+      - "/tmp/opkssh.mod"
   notify: Install module
   changed_when: true
 
@@ -40,7 +40,7 @@
     argv:
       - semodule
       - -i
-      - "{{ pp_tmp }}"
+      - "/tmp/opkssh.pp"
   notify: Remove temporary files
   changed_when: true
 
@@ -49,8 +49,8 @@
     path: "{{ item }}"
     state: absent
   with_items:
-    - "{{ mod_tmp }}"
-    - "{{ pp_tmp }}"
+    - "/tmp/opkssh.mod"
+    - "/tmp/opkssh.pp"
 
 - name: Remove SELinux module
   ansible.builtin.command:
