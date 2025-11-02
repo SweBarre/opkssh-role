@@ -76,7 +76,7 @@ jobs:
           persist-credentials: false
 
       - name: Run Molucule scenario for operating system testing
-        uses: gofrolist/molecule-action@764c5ec45d592c6f00f89e609950f4815841e53e  # v2.7.75
+        uses: gofrolist/molecule-action@96a9f574322b23e68390bb62c925f7ef4ebb51d1  # v2.7.76
         with:
           molecule_args: --parallel --scenario-name default
         env:
@@ -95,7 +95,7 @@ jobs:
           persist-credentials: false
 
       - name: Run Molucule scenario for absent tasks
-        uses: gofrolist/molecule-action@764c5ec45d592c6f00f89e609950f4815841e53e  # v2.7.75
+        uses: gofrolist/molecule-action@96a9f574322b23e68390bb62c925f7ef4ebb51d1  # v2.7.76
         with:
           molecule_args: --scenario-name absent
         env:
@@ -113,7 +113,7 @@ jobs:
           persist-credentials: false
 
       - name: Run Molucule scenario for unsupported-version
-        uses: gofrolist/molecule-action@764c5ec45d592c6f00f89e609950f4815841e53e  # v2.7.75
+        uses: gofrolist/molecule-action@96a9f574322b23e68390bb62c925f7ef4ebb51d1  # v2.7.76
         with:
           molecule_args: --scenario-name unsupported-version
         env:
