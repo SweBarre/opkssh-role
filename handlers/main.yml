@@ -8,8 +8,8 @@
 - name: Restore SELinux context for opkssh
   ansible.builtin.command: "restorecon {{ opkssh_install_path }}/{{ opkssh_binary_name }}"
   when:
-    - ansible_selinux is defined
-    - ansible_selinux.status not in ['disabled', 'Missing selinux Python library']
+    - ansible_facts['selinux'] is defined
+    - ansible_facts['selinux'].status not in ['disabled', 'Missing selinux Python library']
   changed_when: true
 
 - name: Compile SELinux module

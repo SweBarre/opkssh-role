@@ -40,8 +40,8 @@
   ansible.builtin.include_tasks:
     file: selinux.yml
   when:
-    - ansible_selinux is defined
-    - ansible_selinux.status not in ['disabled', 'Missing selinux Python library']
+    - ansible_facts['selinux'] is defined
+    - ansible_facts['selinux'].status not in ['disabled', 'Missing selinux Python library']
 
 - name: Create opkssh configuration directory
   ansible.builtin.file:

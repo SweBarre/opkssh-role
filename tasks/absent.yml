@@ -16,8 +16,8 @@
 
 - name: Print out the SELinux status
   ansible.builtin.debug:
-    msg: "SELinux status is: {{ ansible_selinux }}"
-  when: ansible_selinux is defined
+    msg: "SELinux status is: {{ ansible_facts['selinux'] }}"
+  when: ansible_facts['selinux'] is defined
 
 - name: Set the correct name for opkssh SELinux module
   ansible.builtin.set_fact:
@@ -29,8 +29,8 @@
   changed_when: semodule_name in semodule_list.stdout
   notify: Remove SELinux module
   when:
-    - ansible_selinux is defined
-    - ansible_selinux.status not in ['disabled', 'Missing selinux Python library']
+    - ansible_facts['selinux'] is defined
+    - ansible_facts['selinux'].status not in ['disabled', 'Missing selinux Python library']
 
 - name: Remove opkssh configuration directory
   ansible.builtin.file:
