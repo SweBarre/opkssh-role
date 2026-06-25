@@ -12,6 +12,9 @@
     return_content: true
   register: release_info
   when: opkssh_version == "latest"
+  # Read-only request; must run under --check so version_installed resolves
+  # when opkssh_version is 'latest' (otherwise the next set_fact fails).
+  check_mode: false
 
 - name: Set opkssh version installed
   ansible.builtin.set_fact:

@@ -22,6 +22,10 @@
     url: "{{ opkssh_download_base_url }}checksums.txt"
     return_content: true
   register: checksums_txt
+  # Read-only request; must run under --check so the computed sha256 is
+  # available to the get_url checksum below (otherwise it is empty and
+  # get_url fails with "The checksum format is invalid").
+  check_mode: false
 
 - name: Find the checksums line for opkssh binary
   ansible.builtin.set_fact:
